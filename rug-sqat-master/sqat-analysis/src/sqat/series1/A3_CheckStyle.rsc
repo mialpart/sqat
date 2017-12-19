@@ -1,7 +1,12 @@
 module sqat::series1::A3_CheckStyle
 
-import Java17ish;
+//import Java17ish;
+import lang::java::\syntax::Java15;
 import Message;
+import String;
+import util::FileSystem;
+import IO;
+import List;
 
 /*
 
@@ -41,9 +46,41 @@ Bonus:
 
 */
 
+set[Message] whiteSpaces(loc projFile){
+	//return {};
+	if(projFile.extension != "java"){
+		return {};
+	}
+	
+	int lineN = 0;
+	set[Message] warn = {};
+	list[str] code = readFileLines(projFile);
+	bool trueFalse = false;
+	
+	for (str s <- code){
+		lineN += 1;
+		if(/^\s*$/ := s) {
+			if(trueFalse){
+				warn += warn("Whiteline: ", projFile + ":line" + "<lineN>");
+			}
+			trueFalse =true;
+			
+		}else{
+			trueFalse = false;
+		}
+	}
+	return warn;
+ 	
+}
+
+
 set[Message] checkStyle(loc project) {
   set[Message] result = {};
+  set[loc] projFiles = files(project);
   
+  for(loc file <- projFiles){
+  	result += whiteSpaces(file);
+  }
   // to be done
   // implement each check in a separate function called here. 
   
