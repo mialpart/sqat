@@ -7,6 +7,7 @@ import String;
 import util::FileSystem;
 import IO;
 import List;
+import util::ResourceMarkers;
 
 /*
 
@@ -27,6 +28,9 @@ finds them.
 Questions
 - for each violation: look at the code and describe what is going on? 
   Is it a "valid" violation, or a false positive?
+  
+  Ans: 	It really recognized codesmells. I checked these files and found 
+  	 	that there really was whitespaces and TODO-comments.
 
 Tips 
 
@@ -46,43 +50,89 @@ Bonus:
 
 */
 
+/* Checks if there is whitespace lines in file */
 set[Message] whiteSpaces(loc projFile){
-	//return {};
-	if(projFile.extension != "java"){
-		return {};
-	}
-	
+	if(projFile.extension == "java"){
+		
 	int lineN = 0;
-	set[Message] warn = {};
+	set[Message] infoMes = {};
 	list[str] code = readFileLines(projFile);
 	bool trueFalse = false;
 	
 	for (str s <- code){
 		lineN += 1;
+		/* Checks if there is whitespace */
 		if(/^\s*$/ := s) {
 			if(trueFalse){
-				warn += warn("Whiteline: ", projFile + ":line" + "<lineN>");
+				infoMes += info("Whitespaceline: ", projFile + "--:line=<lineN>");
 			}
 			trueFalse =true;
-			
 		}else{
 			trueFalse = false;
 		}
 	}
-	return warn;
- 	
+	return infoMes;
+ 	}
+ 	return {};
+}
+
+/* Checks if  file is too long */
+set[Message] fileLength(loc projFile) {
+	list[str] ext = ["java"];
+	if(indexOf(ext,projFile.extension) < 0){
+		return {};
+	}
+	list[str] line = readFileLines(projFile);
+	set[Message] infos = {};
+	int max = 250;
+	
+	if (size(line) > max) {
+		infos += info("File longer than <max> lines",projFile);
+	}
+	
+	return infos;
 }
 
 
+/* Checks if there is TODO- comments in file */
+set[Message] toDoComm(loc projectFile){
+	if(projectFile.extension == "java"){
+	
+	int lineN = 0;
+	list[str] codeComms = readFileLines(projectFile);
+	set[Message] infoToDo = {};
+	bool tf = false;
+	
+	for(str s <- codeComms){
+		lineN +=1;
+		/* Checks TODO comments*/
+		if(/^\s*\/\/\s*TODO.*$/ := s){
+			if(tf){
+				infoToDo += info("TODO-comment: ", projectFile + "--:line=<lineN>");
+			}
+			tf = true;
+		}else{
+			tf = false;
+		}
+		
+	}
+	
+	return infoToDo;
+	}
+	return {};
+}
+
+/*checks styles*/
 set[Message] checkStyle(loc project) {
   set[Message] result = {};
   set[loc] projFiles = files(project);
   
   for(loc file <- projFiles){
   	result += whiteSpaces(file);
+  	result += toDoComm(file);
+  	result += fileLength(file);
   }
-  // to be done
-  // implement each check in a separate function called here. 
+
   
   return result;
 }
