@@ -78,18 +78,14 @@ set[Message] whiteSpaces(loc projFile){
 
 /* Checks if  file is too long */
 set[Message] fileLength(loc projFile) {
-	list[str] ext = ["java"];
-	if(indexOf(ext,projFile.extension) < 0){
-		return {};
-	}
-	list[str] line = readFileLines(projFile);
+
+	list[str] lines = readFileLines(projFile);
 	set[Message] infos = {};
 	int max = 250;
 	
-	if (size(line) > max) {
+	if (size(lines) > max) {
 		infos += info("File longer than <max> lines",projFile);
 	}
-	
 	return infos;
 }
 
@@ -99,11 +95,11 @@ set[Message] toDoComm(loc projectFile){
 	if(projectFile.extension == "java"){
 	
 	int lineN = 0;
-	list[str] codeComms = readFileLines(projectFile);
+	list[str] codeCommsLines = readFileLines(projectFile);
 	set[Message] infoToDo = {};
 	bool tf = false;
 	
-	for(str s <- codeComms){
+	for(str s <- codeCommsLines){
 		lineN +=1;
 		/* Checks TODO comments*/
 		if(/^\s*\/\/\s*TODO.*$/ := s){

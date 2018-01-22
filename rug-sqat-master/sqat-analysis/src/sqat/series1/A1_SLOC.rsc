@@ -4,7 +4,6 @@ import IO;
 import ParseTree;
 import String;
 import util::FileSystem;
-//import sqat::series1::Comments;
 
 /* 
 
@@ -52,32 +51,25 @@ int isComment(str s) {
   		return 0;
   	}else if(/(^|\s*)\/\/.*/ := s){
   		return 0;
-  	}else if(/\/\*.*/ := s){
+  	}else if(/\/\*.*/ := s){ //is it multicomment
   		return 2;
 }
-	//  	println(s);
   	return 1;
 }
 
 // checking if there is multicomments
 int isMultiComment(str s){
-	if(/.*\*\/$/ := s){
+	if(/.*\*\/$/ := s){ //is multicomment ending
 		return 3;
 	}
 	return 0;
 }
 
-
 alias SLOC = map[loc file, int sloc];
-
-
-
-
 
 SLOC sloc(loc project) {
   SLOC result = ();
   //loc jpacman = |project://jpacman-framework|;
-  // implement here
 	
   set[loc] projFiles = files(project);
   list[str] lines;
@@ -85,31 +77,28 @@ SLOC sloc(loc project) {
   int max = 0; 
   loc maxfile ;
   
-  
   for(loc file <- projFiles){
   	if (file.extension == "java"){
   		lines = readFileLines(file);
-  		//println(lines);
   		int totalsloc = 0;
-  		int ans = 0;
+  		int resultt = 0;
   		bool multComments = false;
+  		
   		for(str line <- lines){
   			if(!multComments){
-	  			ans = isComment(line);
+	  			resultt = isComment(line);
 			}
 			else{
-  				ans = isMultiComment(line);
+  				resultt = isMultiComment(line);
 			}
-			
   			
-  			if(ans := 1){
+  			if(resultt := 1){
   			  totalsloc += 1;
-  			}else if(ans := 2){
+  			}else if(resultt := 2){ //multicomms open
   				multComments = true;
-			}else if(ans := 3){
+			}else if(resultt := 3){ //multicomms close
   				multComments = false;
 			}
-  			
   		}
   		print(file.file + ": ");
   		println(totalsloc);
