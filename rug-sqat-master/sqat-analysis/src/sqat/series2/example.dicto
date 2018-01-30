@@ -1,4 +1,14 @@
+nl.tudelft.jpacman.level.Level cannot depend nl.tudelft.jpacman.ui.ScorePanel
+nl.tudelft.jpacman.game.Game must depend nl.tudelft.jpacman.level
+nl.tudelft.jpacman.LauncherSmokeTest must import org.junit.Test
+nl.tudelft.jpacman.level.Player cannot inherit nl.tudelft.jpacman.npc.NPC
+nl.tudelft.jpacman.npc.NPC must inherit nl.tudelft.jpacman.board.Unit
+nl.tudelft.jpacman.npc.ghost.Ghost must inherit nl.tudelft.jpacman.npc.NPC
+nl.tudelft.jpacman.level.Pellet must inherit nl.tudelft.jpacman.board.Unit
+nl.tudelft.jpacman.npc.ghost.Inky must inherit nl.tudelft.jpacman.npc.ghost.Ghost
+nl.tudelft.jpacman.npc.ghost.Pinky must inherit nl.tudelft.jpacman.npc.ghost.Ghost
+nl.tudelft.jpacman.level.PlayerCollisions must depend nl.tudelft.jpacman.level.CollisionMap
 
-foo.Foo cannot depend bar.Bar
-foo.Foo::init cannot instantiate bar.Bar
-foo cannot import bar
+nl.tudelft.jpacman.LauncherSmokeTest must import nl.tudelft.jpacman.level.CollisionMap
+nl.tudelft.jpacman.level.PlayerCollisions must depend nl.tudelft.jpacman.npc.ghost.Ghost
+nl.tudelft.jpacman.npc.ghost.Clyde must inherit nl.tudelft.jpacman.npc.NPC

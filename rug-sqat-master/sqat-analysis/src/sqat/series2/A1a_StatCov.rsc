@@ -1,6 +1,18 @@
 module sqat::series2::A1a_StatCov
-
+//import lang::java::m3::Core;
 import lang::java::jdt::m3::Core;
+import Java17ish;
+import Message;
+import lang::java::jdt::m3::AST;
+import IO;
+import ParseTree;
+import Type;
+import List;
+import String;
+import Set;
+import Map;
+import util::FileSystem;
+import Type;
 
 /*
 
@@ -38,12 +50,101 @@ Tips
 
 Questions:
 - what methods are not covered at all?
+	Many of these uncovered methods are from UI,level and board classes
+	
 - how do your results compare to the jpacman results in the paper? Has jpacman improved?
+	In that paper: Static 88.06%/ Clover 93.53%/ Difference −5.47%
+	My coverage result was : 80.51282051 / Clover 76.6 / Difference about +4.1
+	
+	Seems like it hasnt. At least Coverage is smaller nowadays.
+
 - use a third-party coverage tool (e.g. Clover) to compare your results to (explain differences)
+	My coverage result was : 80.51282051 and Clover gave: 76.6 
+	
+	This static version works on source code
+	
+	Clover takes Statements and Methods and measures coverage while the whole program has been executed. 
 
 
 */
 
 
-M3 jpacmanM3() = createM3FromEclipseProject(|project://jpacman-framework|);
+
+M3 jpacmanM3() = createM3FromEclipseProject(|project://jpacman-framework/|);
+
+alias Node = loc;
+alias Graph =rel[Node, Node];
+
+
+
+
+void main() {
+	M3 m3 = jpacmanM3();
+	Graph graph;
+	Graph closure;
+	
+	allTests = getMethods(m3);
+	//println(allTests);
+	graph = buildGraph(m3);
+	closure = transitiveClosure(graph);
+	coverage = getCoverage(closure,allTests);
+
+	results(coverage);
+
+}
+
+bool isJpacman(loc l) = contains(l.path, "/jpacman/"); 
+
+void results(tuple[set[loc],set[loc]] coverage){
+	println("Not covered :");
+	for(meth <- coverage[1] - coverage[0]) {
+		println(meth);
+	}
+	
+	println("Static coverage is: <size(coverage[0]) * 100.0 / size(coverage[1])>");
+	println(<size(coverage[0]), size(coverage[1])>);
+}
+
+tuple[set[loc],set[loc]] getCoverage(Graph closure, map[loc, loc] allTests) {
+	set[loc] coveredMeths = {};
+	set[loc] allMeths = {};
+	for(<from,to> <- closure) {
+		if(isTest(from, allTests) && !isTest(to, allTests)) {
+			//gettin covered methods
+			if(to notin coveredMeths) {
+				coveredMeths += to;
+			}
+		}
+		//getting all methods, also whichs are not covered
+		if(to notin allMeths && !isTest(to, allTests)) {
+			allMeths += to;
+		}
+	}
+	return <coveredMeths, allMeths>;
+}
+
+Graph transitiveClosure(Graph graph) {
+	return solve(graph){
+		graph = graph + (graph o graph);
+	};
+}
+
+bool isTest(loc l, map[loc, loc] allTests) = l in allTests ? true : false;
+
+Graph buildGraph(M3 m3){
+	Graph graph = {};
+	m3Invocation = m3.methodInvocation;
+	graph = { <from , to> | <from,to> <- m3Invocation , contains(to.path, "/jpacman/")};
+	return graph;
+}
+
+map [loc,loc] getMethods(M3 m3) {
+	map[loc,loc] allTests = ();
+	m3Decl = m3.declarations;
+	allTests =  ( decl.name : decl.src | decl <- m3Decl, isMethod(decl.name), 
+										 contains(decl.name.path, "/jpacman/"), 
+										 contains(decl.src.path,"/test/"));
+
+	return allTests;
+}
 
